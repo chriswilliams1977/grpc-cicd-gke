@@ -2,7 +2,7 @@ steps:
   #build and push protoc to GCR
   #required by protoc-gen-go
   - name: gcr.io/cloud-builders/gcloud
-    args: [ builds, submit, ".","--config=./src/emoji/protos/cloudbuild.yaml" ]
+    args: [ builds, submit, ".","--config=src/emoji/protos/cloudbuild.yaml" ]
 
   #build protoc image and push to GCR so Cloud Build can use it
   - name: 'gcr.io/cloud-builders/docker'
@@ -23,7 +23,7 @@ steps:
   #generate grpc go protobufs
   - name: gcr.io/${PROJECT_ID}/protoc
     args:
-    - --proto_path=./src/emoji/protos
+    - --proto_path=src/emoji/protos
     - --plugin=protoc-gen-go=/go/bin/protoc-gen-go
     - --go_out=plugins=grpc:/go/src
     - ./src/emoji/protos/emoji.proto
