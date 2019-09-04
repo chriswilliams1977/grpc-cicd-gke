@@ -1,0 +1,46 @@
+steps:
+  #build and push protoc to GCR
+  #required by protoc-gen-go
+  - name: gcr.io/cloud-builders/gcloud
+    args: [ builds, submit, ".","--config=./src/emoji/protos/cloudbuild.yaml" ]
+
+  #build protoc image and push to GCR so Cloud Build can use it
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+    - go
+    - get
+    - -u
+    - github.com/golang/protobuf/protoc-gen-go
+
+  #download protoc-gen-go
+  - name: golang:1.12
+    args:
+    - go
+    - get
+    - -u
+    - github.com/golang/protobuf/protoc-gen-go
+
+  #generate grpc go protobufs
+  - name: gcr.io/${PROJECT_ID}/protoc
+    args:
+    - --proto_path=./src/emoji/protos
+    - --plugin=protoc-gen-go=/go/bin/protoc-gen-go
+    - --go_out=plugins=grpc:/go/src
+    - ./src/emoji/protos/emoji.proto
+  
+  #build the Docker image
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/grpc-web-server:${SHORT_SHA}', '.']
+
+  #push image to GCR
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ["push", "gcr.io/$PROJECT_ID/grpc-web-server"]
+
+options:
+  #set env vars
+  env:
+  - GO111MODULE=on
+  - GOPROXY=https://proxy.golang.org
+  volumes:
+  - name: go-modules
+    path: /go

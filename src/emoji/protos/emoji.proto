@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package emoji;
+option go_package = "emojipb";
+
+message EmojizeRequest {
+    string text = 1;
+  }
+  
+message EmojizeReply {
+    string emojized_text = 1;
+}
+
+service EmojiService {
+    rpc Emojize (EmojizeRequest) returns (EmojizeReply);
+  }
