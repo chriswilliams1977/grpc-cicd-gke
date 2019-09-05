@@ -1,35 +1,8 @@
 steps:
-  #Traverse each subdirectory or use find to locate additional cloudbuild.yaml files.
-  #For each found cloudbuild.yaml, fork and submit a build by running gcloud builds submit.
-  #Wait for all the forked gcloud commands to complete.
-  #build and push protoc to GCR
-  #required by protoc-gen-go
   - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
-    args:
-    - '-c'
-    - |
-      for d in */; do
-        config="${d}cloudbuild.yaml"
-        if [[ ! -f "${config}" ]]; then
-          continue
-        fi
-
-        echo "Building $d ... "
-        (
-          gcloud builds submit $d --config=${config}
-        ) &
-      done
-      wait
+    args: ['builds', 'submit', './src/emoji/protos','--config=cloudbuild.yaml']
 
   #build protoc image and push to GCR so Cloud Build can use it
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-    - go
-    - get
-    - '-u'
-    - github.com/golang/protobuf/protoc-gen-go
-
   #download protoc-gen-go
   - name: golang:1.12
     args:
