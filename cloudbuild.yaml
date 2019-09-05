@@ -1,6 +1,21 @@
 steps:
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['builds', 'submit', './src/emoji/protos/','--config=cloudbuild.yaml']
+    entrypoint: 'bash'
+    args:
+    - '-c'
+    - |
+      for d in */; do
+        config="${d}cloudbuild.yaml"
+        if [[ ! -f "${config}" ]]; then
+          continue
+        fi
+
+        echo "Building $d ... "
+        (
+          gcloud builds submit $d --config=${config}
+        ) &
+      done
+      wait
 
   #build protoc image and push to GCR so Cloud Build can use it
   #download protoc-gen-go
